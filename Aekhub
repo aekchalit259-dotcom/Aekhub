@@ -1,0 +1,269 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ค่าตั้งค่าเริ่มต้น
+local Settings = {
+    BigBall = false,
+    BigBallSizeValue = 5, -- ปรับได้ 1 ถึง 10
+    Hitbox = false,
+    HitboxMultiplier = 0.50 -- 1% ถึง 100% (0.01 - 1.00)
+}
+
+-- ลบ UI เก่า (ถ้ามี) เพื่อป้องกันการซ้ำซ้อน
+if PlayerGui:FindFirstChild("AEK_GK_Hub") then
+    PlayerGui.AEK_GK_Hub:Destroy()
+end
+
+-- สร้าง UI เมนูหลัก
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AEK_GK_Hub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 320, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundTransparency = 1
+Title.Text = "AEK HUB - GK RIVALS"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- ปุ่มฟังก์ชันที่ 1: Big Ball
+local BigBallBtn = Instance.new("TextButton")
+BigBallBtn.Size = UDim2.new(0.9, 0, 0, 40)
+BigBallBtn.Position = UDim2.new(0.05, 0, 0, 55)
+BigBallBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+BigBallBtn.Text = "1. Big Ball Settings [v]"
+BigBallBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+BigBallBtn.TextSize = 14
+BigBallBtn.Font = Enum.Font.GothamSemibold
+BigBallBtn.Parent = MainFrame
+Instance.new("UICorner", BigBallBtn).CornerRadius = UDim.new(0, 6)
+
+-- Sub-menu สำหรับ Big Ball
+local BigBallSub = Instance.new("Frame")
+BigBallSub.Size = UDim2.new(0.9, 0, 0, 95)
+BigBallSub.Position = UDim2.new(0.05, 0, 0, 100)
+BigBallSub.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+BigBallSub.Visible = false
+BigBallSub.Parent = MainFrame
+Instance.new("UICorner", BigBallSub).CornerRadius = UDim.new(0, 6)
+
+local BBToggle = Instance.new("TextButton")
+BBToggle.Size = UDim2.new(0.9, 0, 0, 30)
+BBToggle.Position = UDim2.new(0.05, 0, 0, 10)
+BBToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+BBToggle.Text = "Toggle: OFF"
+BBToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+BBToggle.TextSize = 13
+BBToggle.Font = Enum.Font.Gotham
+BBToggle.Parent = BigBallSub
+Instance.new("UICorner", BBToggle).CornerRadius = UDim.new(0, 4)
+
+local BBValLabel = Instance.new("TextLabel")
+BBValLabel.Size = UDim2.new(0.5, 0, 0, 35)
+BBValLabel.Position = UDim2.new(0.25, 0, 0, 50)
+BBValLabel.BackgroundTransparency = 1
+BBValLabel.Text = "Size: 5"
+BBValLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BBValLabel.TextSize = 13
+BBValLabel.Font = Enum.Font.Gotham
+BBValLabel.Parent = BigBallSub
+
+local BBMinus = Instance.new("TextButton")
+BBMinus.Size = UDim2.new(0, 35, 0, 30)
+BBMinus.Position = UDim2.new(0.05, 0, 0, 52)
+BBMinus.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BBMinus.Text = "-"
+BBMinus.TextColor3 = Color3.fromRGB(255, 255, 255)
+BBMinus.Parent = BigBallSub
+Instance.new("UICorner", BBMinus).CornerRadius = UDim.new(0, 4)
+
+local BBPlus = Instance.new("TextButton")
+BBPlus.Size = UDim2.new(0, 35, 0, 30)
+BBPlus.Position = UDim2.new(0.78, 0, 0, 52)
+BBPlus.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BBPlus.Text = "+"
+BBPlus.TextColor3 = Color3.fromRGB(255, 255, 255)
+BBPlus.Parent = BigBallSub
+Instance.new("UICorner", BBPlus).CornerRadius = UDim.new(0, 4)
+
+-- ปุ่มฟังก์ชันที่ 2: Hitbox
+local HitboxBtn = Instance.new("TextButton")
+HitboxBtn.Size = UDim2.new(0.9, 0, 0, 40)
+HitboxBtn.Position = UDim2.new(0.05, 0, 0, 205)
+HitboxBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+HitboxBtn.Text = "2. Hitbox Settings [v]"
+HitboxBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+HitboxBtn.TextSize = 14
+HitboxBtn.Font = Enum.Font.GothamSemibold
+HitboxBtn.Parent = MainFrame
+Instance.new("UICorner", HitboxBtn).CornerRadius = UDim.new(0, 6)
+
+-- Sub-menu สำหรับ Hitbox
+local HitboxSub = Instance.new("Frame")
+HitboxSub.Size = UDim2.new(0.9, 0, 0, 95)
+HitboxSub.Position = UDim2.new(0.05, 0, 0, 250)
+HitboxSub.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+HitboxSub.Visible = false
+HitboxSub.Parent = MainFrame
+Instance.new("UICorner", HitboxSub).CornerRadius = UDim.new(0, 6)
+
+local HBToggle = Instance.new("TextButton")
+HBToggle.Size = UDim2.new(0.9, 0, 0, 30)
+HBToggle.Position = UDim2.new(0.05, 0, 0, 10)
+HBToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+HBToggle.Text = "Toggle: OFF"
+HBToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+HBToggle.TextSize = 13
+HBToggle.Font = Enum.Font.Gotham
+HBToggle.Parent = HitboxSub
+Instance.new("UICorner", HBToggle).CornerRadius = UDim.new(0, 4)
+
+local HBValLabel = Instance.new("TextLabel")
+HBValLabel.Size = UDim2.new(0.5, 0, 0, 35)
+HBValLabel.Position = UDim2.new(0.25, 0, 0, 50)
+HBValLabel.BackgroundTransparency = 1
+HBValLabel.Text = "Hitbox: 50%"
+HBValLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+HBValLabel.TextSize = 13
+HBValLabel.Font = Enum.Font.Gotham
+HBValLabel.Parent = HitboxSub
+
+local HBMinus = Instance.new("TextButton")
+HBMinus.Size = UDim2.new(0, 35, 0, 30)
+HBMinus.Position = UDim2.new(0.05, 0, 0, 52)
+HBMinus.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+HBMinus.Text = "-"
+HBMinus.TextColor3 = Color3.fromRGB(255, 255, 255)
+HBMinus.Parent = HitboxSub
+Instance.new("UICorner", HBMinus).CornerRadius = UDim.new(0, 4)
+
+local HBPlus = Instance.new("TextButton")
+HBPlus.Size = UDim2.new(0, 35, 0, 30)
+HBPlus.Position = UDim2.new(0.78, 0, 0, 52)
+HBPlus.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+HBPlus.Text = "+"
+HBPlus.TextColor3 = Color3.fromRGB(255, 255, 255)
+HBPlus.Parent = HitboxSub
+Instance.new("UICorner", HBPlus).CornerRadius = UDim.new(0, 4)
+
+-- ระบบเปิด/ปิด Sub-menu
+BigBallBtn.MouseButton1Click:Connect(function()
+    BigBallSub.Visible = not BigBallSub.Visible
+    HitboxSub.Visible = false
+    if BigBallSub.Visible then
+        HitboxBtn.Position = UDim2.new(0.05, 0, 0, 305)
+    else
+        HitboxBtn.Position = UDim2.new(0.05, 0, 0, 205)
+    end
+end)
+
+HitboxBtn.MouseButton1Click:Connect(function()
+    HitboxSub.Visible = not HitboxSub.Visible
+end)
+
+-- ระบบควบคุม Big Ball Toggle & Value
+BBToggle.MouseButton1Click:Connect(function()
+    Settings.BigBall = not Settings.BigBall
+    if Settings.BigBall then
+        BBToggle.Text = "Toggle: ON"
+        BBToggle.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        BBToggle.Text = "Toggle: OFF"
+        BBToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+BBPlus.MouseButton1Click:Connect(function()
+    if Settings.BigBallSizeValue < 10 then
+        Settings.BigBallSizeValue = Settings.BigBallSizeValue + 1
+        BBValLabel.Text = "Size: " .. Settings.BigBallSizeValue
+    end
+end)
+
+BBMinus.MouseButton1Click:Connect(function()
+    if Settings.BigBallSizeValue > 1 then
+        Settings.BigBallSizeValue = Settings.BigBallSizeValue - 1
+        BBValLabel.Text = "Size: " .. Settings.BigBallSizeValue
+    end
+end)
+
+-- ระบบควบคุม Hitbox Toggle & Value
+HBToggle.MouseButton1Click:Connect(function()
+    Settings.Hitbox = not Settings.Hitbox
+    if Settings.Hitbox then
+        HBToggle.Text = "Toggle: ON"
+        HBToggle.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        HBToggle.Text = "Toggle: OFF"
+        HBToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+HBPlus.MouseButton1Click:Connect(function()
+    if Settings.HitboxMultiplier < 1.0 then
+        Settings.HitboxMultiplier = math.clamp(Settings.HitboxMultiplier + 0.05, 0.01, 1.0)
+        HBValLabel.Text = "Hitbox: " .. math.floor(Settings.HitboxMultiplier * 100) .. "%"
+    end
+end)
+
+HBMinus.MouseButton1Click:Connect(function()
+    if Settings.HitboxMultiplier > 0.01 then
+        Settings.HitboxMultiplier = math.clamp(Settings.HitboxMultiplier - 0.05, 0.01, 1.0)
+        HBValLabel.Text = "Hitbox: " .. math.floor(Settings.HitboxMultiplier * 100) .. "%"
+    end
+end)
+
+-- ฟังก์ชันค้นหาลูกบอล
+local function GetBall()
+    return Workspace:FindFirstChild("Football") or Workspace:FindFirstChild("Ball")
+end
+
+-- การทำงานของ Big Ball ตามค่า Size 1-10
+RunService.RenderStepped:Connect(function()
+    local ball = GetBall()
+    if ball and ball:IsA("BasePart") then
+        if Settings.BigBall then
+            -- คูณขนาดตามค่าระดับ 1 ถึง 10
+            local scale = Settings.BigBallSizeValue * 1.5
+            ball.Size = Vector3.new(scale, scale, scale)
+            ball.CanCollide = false
+        end
+    end
+end)
+
+-- การทำงานของ Hitbox ตามค่าเปอร์เซ็นต์
+RunService.Stepped:Connect(function()
+    if Settings.Hitbox then
+        local character = LocalPlayer.Character
+        if character then
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart and rootPart:IsA("BasePart") then
+                local baseSize = 2
+                local extraSize = Settings.HitboxMultiplier * 15
+                rootPart.Size = Vector3.new(baseSize + extraSize, baseSize + extraSize, baseSize + extraSize)
+                rootPart.Transparency = 0.6
+                rootPart.CanCollide = false
+            end
+        end
+    end
+end)
